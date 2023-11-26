@@ -4,6 +4,7 @@ import picar
 import cv2
 
 from src.opencv_auto.driver import AutoDrive
+from src.cnn_driving.driver import CNNDrive
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,8 @@ class DriveBerry(object):
         self.back_wheels.forward()
         self.back_wheels.speed = 0
 
-        self.lane_follower = AutoDrive(self)
+        # self.lane_follower = AutoDrive(self)
+        self.lane_follower = CNNDrive(self)
 
         logging.debug("Setting up video capture")
 
