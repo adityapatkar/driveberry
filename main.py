@@ -38,8 +38,8 @@ class DriveBerry(object):
         self.back_wheels.forward()
         self.back_wheels.speed = 0
 
-        # self.lane_follower = AutoDrive(self)
-        self.lane_follower = CNNDrive(self)
+        self.lane_follower = AutoDrive(self)
+        # self.lane_follower = CNNDrive(self)
 
         logging.debug("Setting up video capture")
 
