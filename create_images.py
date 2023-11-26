@@ -1,5 +1,7 @@
-import cv2
+import os
 import sys
+import cv2
+
 
 from src.opencv_auto.driver import AutoDrive
 
@@ -12,7 +14,11 @@ def save_image_and_steering_angle(filename):
     cap = cv2.VideoCapture(f"{filename}.avi")
 
     try:
-        i = 0
+        # find the number of images already saved
+        directory = os.fsencode("./data/images")
+        print(f"found {len(os.listdir(directory))} images")
+        i = len(os.listdir(directory)) + 5
+
         while cap.isOpened():
             _, frame = cap.read()
             lane_follower.follow_lane(frame)
