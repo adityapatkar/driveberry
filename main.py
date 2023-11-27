@@ -4,7 +4,8 @@ import picar
 import cv2
 
 from src.opencv_auto.driver import AutoDrive
-from src.cnn_driving.driver import CNNDrive
+
+# from src.cnn_driving.driver import CNNDrive
 from src.object_detection.detect import Detector
 from src.opencv_auto.utility import show_image
 
