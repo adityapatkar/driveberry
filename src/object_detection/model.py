@@ -2,7 +2,7 @@ import time
 import os
 import sys
 import logging
-
+from PIL import Image
 import yaml
 import numpy as np
 import pycoral.utils.edgetpu as etpu
@@ -150,26 +150,30 @@ class EdgeTPUModel:
             prediction array (with or without NMS applied)
 
         """
-        tstart = time.time()
-        # Transpose if C, H, W
-        if x.shape[0] == 3:
-            x = x.transpose((1, 2, 0))
 
-        x = x.astype("float32")
+        # convert to RGB
+        x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB)
 
-        # Scale input, conversion is: real = (int_8 - zero)*scale
-        x = (x / self.input_scale) + self.input_zero
-        x = x[np.newaxis].astype(np.uint8)
+        img_pil = Image.fromarray(x)
 
+        # Get image size
+        img_size = img_pil.size
+
+        # Resize image
+        img_pil = img_pil.resize(self.input_size, Image.BICUBIC)
+
+        # Convert to numpy array
+        x = np.asarray(img_pil)
+
+        # interpreter
         self.interpreter.set_tensor(self.input_details[0]["index"], x)
-        self.interpreter.invoke()
 
-        # Scale output
-        # result = (
-        #     common.output_tensor(self.interpreter, 0).astype("float32")
-        #     - self.output_zero
-        # ) * self.output_scale
-        # self.inference_time = time.time() - tstart
+        # Run inference
+        start = time.time()
+        self.interpreter.invoke()
+        self.inference_time = time.time() - start
+
+        # Get predictions
 
         result = detect.get_objects(
             self.interpreter, self.conf_thresh, self.input_size[0]
