@@ -100,16 +100,16 @@ class DriveBerry(object):
         i = 0
         while self.camera.isOpened():
             ret, lane_frame = self.camera.read()
-            # object_frame = lane_frame.copy()
+            object_frame = lane_frame.copy()
 
             if ret:
                 i += 1
                 logging.debug(f"Processing frame {i}")
                 self.video_orig.write(lane_frame)
 
-                image_objs = self.process_objects_on_road(image_objs)
-                self.video_objs.write(image_objs)
-                show_image("Detected Objects", image_objs)
+                object_frame = self.process_objects_on_road(object_frame)
+                self.video_objs.write(object_frame)
+                show_image("Detected Objects", object_frame)
 
                 lane_frame = self.lane_follower.follow_lane(lane_frame)
                 self.video_lane.write(lane_frame)
