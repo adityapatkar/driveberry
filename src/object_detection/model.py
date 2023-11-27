@@ -12,7 +12,7 @@ from pycoral.adapters import detect
 import cv2
 import json
 
-from utils import plot_one_box, Colors, get_image_tensor
+from src.object_detection.utils import plot_one_box, Colors, get_image_tensor
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
