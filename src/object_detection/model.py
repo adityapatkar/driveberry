@@ -162,8 +162,8 @@ class EdgeTPUModel:
         # Convert to numpy array
         # x = np.asarray(img_pil)
 
-        # Convert to float32
-        x = x.astype(np.float32)
+        # Convert to uint8
+        x = x.astype(np.uint8)
 
         # interpreter
         self.interpreter.set_tensor(self.input_details[0]["index"], x)
