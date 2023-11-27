@@ -9,7 +9,7 @@ from src.cnn_driving.utility import img_preprocess, display_heading_line, show_i
 
 class CNNDrive(object):
     def __init__(
-        self, car=None, model_path="src/cnn_driving/model/lane_follower_cnn.keras"
+        self, car=None, model_path="src/cnn_driving/model/lane_follower_model_v2.keras"
     ):
         logging.info("Creating a CNNDrive instance...")
 
