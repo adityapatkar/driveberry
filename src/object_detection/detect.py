@@ -9,7 +9,7 @@ class Detector(object):
     def __init__(
         self,
         car=None,
-        model_file="src/object_detection/artifacts/yolov5s-int8-224_edgetpu.tflite",
+        model_file="src/object_detection/artifacts/model.tflite",
         names_file="src/object_detection/artifacts/coco.yaml",
         width=640,
         height=480,
