@@ -154,16 +154,13 @@ class EdgeTPUModel:
         # convert to RGB
         x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB)
 
-        img_pil = Image.fromarray(x)
-
-        # Get image size
-        img_size = img_pil.size
+        # img_pil = Image.fromarray(x)
 
         # Resize image
-        img_pil = img_pil.resize(self.input_size, Image.BICUBIC)
+        # img_pil = img_pil.resize(self.input_size, Image.BICUBIC)
 
         # Convert to numpy array
-        x = np.asarray(img_pil)
+        # x = np.asarray(img_pil)
 
         # Convert to float32
         x = x.astype(np.float32)
