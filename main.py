@@ -5,6 +5,8 @@ import cv2
 
 from src.opencv_auto.driver import AutoDrive
 from src.cnn_driving.driver import CNNDrive
+from src.object_detection.detect import Detector
+from src.opencv_auto.utility import show_image
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +42,8 @@ class DriveBerry(object):
 
         self.lane_follower = AutoDrive(self)
         # self.lane_follower = CNNDrive(self)
+
+        self.object_detector = Detector(self)
 
         logging.debug("Setting up video capture")
 
@@ -102,9 +106,9 @@ class DriveBerry(object):
                 logging.debug(f"Processing frame {i}")
                 self.video_orig.write(lane_frame)
 
-                # image_objs = self.process_objects_on_road(image_objs)
-                # self.video_objs.write(image_objs)
-                # show_image('Detected Objects', image_objs)
+                image_objs = self.process_objects_on_road(image_objs)
+                self.video_objs.write(image_objs)
+                show_image("Detected Objects", image_objs)
 
                 lane_frame = self.lane_follower.follow_lane(lane_frame)
                 self.video_lane.write(lane_frame)
@@ -120,9 +124,9 @@ class DriveBerry(object):
         image = self.lane_follower.follow_lane(image)
         return image
 
-    # def process_objects_on_road(self, image):
-    #     #image = self.traffic_sign_processor.process_objects_on_road(image)
-    #     return image
+    def process_objects_on_road(self, image):
+        image = self.object_detector.process_objects_on_road(image)
+        return image
 
 
 if __name__ == "__main__":
