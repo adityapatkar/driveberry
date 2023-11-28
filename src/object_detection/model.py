@@ -69,6 +69,7 @@ class DetectionModel(object):
         # default: if a sign is 10% of the height of frame
         bbox = obj.bbox
         obj_height = bbox.ymin - bbox.ymax
+        print(obj_height / frame_height)
         return obj_height / frame_height > min_height_pct
 
     def control_car(self, objects):
