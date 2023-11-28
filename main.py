@@ -113,7 +113,7 @@ class DriveBerry(object):
 
                 lane_frame = self.lane_follower.follow_lane(lane_frame)
                 self.video_lane.write(lane_frame)
-                cv2.imshow("Lane Lines", lane_frame)
+                # cv2.imshow("Lane Lines", lane_frame)
 
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
