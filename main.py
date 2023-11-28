@@ -134,4 +134,4 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     logging.info("Starting car")
     with DriveBerry() as car:
-        car.drive(35)
+        car.drive(10)

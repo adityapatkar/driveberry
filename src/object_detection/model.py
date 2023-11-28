@@ -1,4 +1,3 @@
-import os
 import logging
 import time
 
@@ -45,15 +44,17 @@ class DetectionModel(object):
             interpreter, frame.shape[:2], lambda size: cv2.resize(frame, size)
         )
 
+        start = time.perf_counter()
         # Run inference
         interpreter.invoke()
-
+        inference_time = time.perf_counter() - start
         # Get detection results
         results = detect.get_objects(
             interpreter, score_threshold=0.65, image_scale=scale
         )
+        print("%.2f ms" % (inference_time * 1000))
 
-        if results:
+        if results and len(results) > 0:
             for obj in results:
                 label = f"{labels[obj.id]} {obj.score:.2f}"
                 print(label)
@@ -81,7 +82,7 @@ class DetectionModel(object):
                     if self.is_close_by(obj, self.height):
                         self.car.back_wheels.speed = 0
                         time.sleep(3)
-                        self.car.back_wheels.speed = 35
+                        self.car.back_wheels.speed = 10
 
     def process_objects_on_road(self, frame):
         # Main entry point of the Road Object Handler
