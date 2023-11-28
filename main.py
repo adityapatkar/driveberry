@@ -9,6 +9,7 @@ from src.opencv_auto.driver import AutoDrive
 from src.object_detection.model import DetectionModel
 from src.opencv_auto.utility import show_image
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 

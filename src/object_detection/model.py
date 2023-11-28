@@ -52,7 +52,7 @@ class DetectionModel(object):
         results = detect.get_objects(
             interpreter, score_threshold=0.65, image_scale=scale
         )
-        print("%.2f ms" % (inference_time * 1000))
+        logger.debug("%.2f ms" % (inference_time * 1000))
 
         if results and len(results) > 0:
             for obj in results:
@@ -86,9 +86,9 @@ class DetectionModel(object):
 
     def process_objects_on_road(self, frame):
         # Main entry point of the Road Object Handler
-        logging.debug("Processing objects.................................")
+        logger.debug("Processing objects.................................")
         objects, final_frame = self.detect_objects(frame)
         self.control_car(objects)
-        logging.debug("Processing objects END..............................")
+        logger.debug("Processing objects END..............................")
 
         return final_frame
