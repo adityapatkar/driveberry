@@ -82,7 +82,7 @@ class DetectionModel(object):
                     if self.is_close_by(obj, self.height):
                         self.car.back_wheels.speed = 0
                         time.sleep(3)
-                        self.car.back_wheels.speed = 10
+                        self.car.back_wheels.speed = 20
 
     def process_objects_on_road(self, frame):
         # Main entry point of the Road Object Handler
