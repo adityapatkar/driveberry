@@ -1,295 +1,108 @@
-import time
 import os
-import sys
 import logging
-from PIL import Image
-import yaml
-import numpy as np
-import pycoral.utils.edgetpu as etpu
+import time
+
 from pycoral.adapters import common
 from pycoral.adapters import detect
+from pycoral.utils.edgetpu import make_interpreter
 
 import cv2
-import json
 
-from src.object_detection.utils import plot_one_box, Colors, get_image_tensor
-
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class EdgeTPUModel:
+class DetectionModel(object):
     def __init__(
         self,
-        model_file,
-        names_file,
-        conf_thresh=0.25,
-        iou_thresh=0.45,
-        filter_classes=None,
-        agnostic_nms=False,
-        max_det=1000,
+        car=None,
+        speed_limit=35,
+        model_path="src/object_detection/artifacts/model_edgetpu.tflite",
+        label_path="src/object_detection/artifacts/labels.txt",
     ):
-        """
-        Creates an object for running a Yolov5 model on an EdgeTPU
+        logger.info("Initializing DetectionModel")
+        self.car = car
+        self.speed_limit = speed_limit
+        self.model_path = model_path
+        self.label_path = label_path
+        self.width = 640
+        self.height = 480
+        self.labels = self.load_labels(self.label_path)
 
-        Inputs:
-          - model_file: path to edgetpu-compiled tflite file
-          - names_file: yaml names file (yolov5 format)
-          - conf_thresh: detection threshold
-          - iou_thresh: NMS threshold
-          - filter_classes: only output certain classes
-          - agnostic_nms: use class-agnostic NMS
-          - max_det: max number of detections
-        """
+    def load_labels(self, path):
+        with open(path, "r") as file:
+            return {i: line.strip() for i, line in enumerate(file.readlines())}
 
-        model_file = os.path.abspath(model_file)
+    def detect_objects(self, frame):
+        # Load the TFLite model and allocate tensors.
+        interpreter = make_interpreter(self.model_path)
+        interpreter.allocate_tensors()
 
-        if not model_file.endswith("tflite"):
-            model_file += ".tflite"
+        # Load labels
+        labels = self.labels
 
-        self.model_file = model_file
-        self.conf_thresh = conf_thresh
-        self.iou_thresh = iou_thresh
-        self.filter_classes = filter_classes
-        self.agnostic_nms = agnostic_nms
-        self.max_det = 1000
-
-        logger.info("Confidence threshold: {}".format(conf_thresh))
-        logger.info("IOU threshold: {}".format(iou_thresh))
-
-        self.inference_time = None
-        self.nms_time = None
-        self.interpreter = None
-        self.colors = Colors()  # create instance for 'from utils.plots import colors'
-
-        self.make_interpreter()
-        self.get_image_size()
-        self.get_names(names_file)
-
-    def get_names(self, path):
-        """
-        Load a names file
-
-        Inputs:
-          - path: path to names file in yaml format
-        """
-
-        with open(path, "r") as f:
-            cfg = yaml.load(f, Loader=yaml.SafeLoader)
-
-        names = cfg["names"]
-        logger.info("Loaded {} classes".format(len(names)))
-
-        self.names = names
-
-    def make_interpreter(self):
-        """
-        Internal function that loads the tflite file and creates
-        the interpreter that deals with the EdgetPU hardware.
-        """
-        # Load the model and allocate
-        self.interpreter = etpu.make_interpreter(self.model_file)
-        self.interpreter.allocate_tensors()
-
-        self.input_details = self.interpreter.get_input_details()
-        self.output_details = self.interpreter.get_output_details()
-
-        logger.debug(self.input_details)
-        logger.debug(self.output_details)
-
-        self.input_zero = self.input_details[0]["quantization"][1]
-        self.input_scale = self.input_details[0]["quantization"][0]
-        self.output_zero = self.output_details[0]["quantization"][1]
-        self.output_scale = self.output_details[0]["quantization"][0]
-
-        # If the model isn't quantized then these should be zero
-        # Check against small epsilon to avoid comparing float/int
-        if self.input_scale < 1e-9:
-            self.input_scale = 1.0
-
-        if self.output_scale < 1e-9:
-            self.output_scale = 1.0
-
-        logger.debug("Input scale: {}".format(self.input_scale))
-        logger.debug("Input zero: {}".format(self.input_zero))
-        logger.debug("Output scale: {}".format(self.output_scale))
-        logger.debug("Output zero: {}".format(self.output_zero))
-
-        logger.info("Successfully loaded {}".format(self.model_file))
-
-    def get_image_size(self):
-        """
-        Returns the expected size of the input image tensor
-        """
-        if self.interpreter is not None:
-            self.input_size = common.input_size(self.interpreter)
-            logger.debug("Expecting input shape: {}".format(self.input_size))
-            return self.input_size
-        else:
-            logger.warn("Interpreter is not yet loaded")
-
-    def predict(self, image, save_img=False, save_txt=False):
-        full_image, net_image, pad = get_image_tensor(image, self.input_size[0])
-        pred = self.forward(net_image)
-
-        # base, ext = os.path.splitext(image_path)
-
-        # output_path = base + "_detect" + ext
-
-        return pred
-
-    def forward(self, x: np.ndarray) -> np.ndarray:
-        """
-        Predict function using the EdgeTPU
-
-        Inputs:
-            x: (C, H, W) image tensor
-            with_nms: apply NMS on output
-
-        Returns:
-            prediction array (with or without NMS applied)
-
-        """
-
-        # convert to RGB
-        x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB)
-
-        # img_pil = Image.fromarray(x)
-
-        # Resize image
-        # img_pil = img_pil.resize(self.input_size, Image.BICUBIC)
-
-        # Convert to numpy array
-        # x = np.asarray(img_pil)
-
-        # Convert to uint8
-        x = x.astype(np.uint8)
-
-        # interpreter
-        self.interpreter.set_tensor(self.input_details[0]["index"], x)
-
-        # Run inference
-        start = time.time()
-        self.interpreter.invoke()
-        self.inference_time = time.time() - start
-
-        # Get predictions
-
-        result = detect.get_objects(
-            self.interpreter, self.conf_thresh, self.input_size[0]
+        # Read and preprocess an image.
+        _, scale = common.set_resized_input(
+            interpreter, frame.shape[:2], lambda size: cv2.resize(frame, size)
         )
 
-        return result
+        # Run inference
+        interpreter.invoke()
 
-    def get_last_inference_time(self, with_nms=True):
-        """
-        Returns a tuple containing most recent inference and NMS time
-        """
-        res = [self.inference_time]
+        # Get detection results
+        results = detect.get_objects(
+            interpreter, score_threshold=0.4, image_scale=scale
+        )
 
-        if with_nms:
-            res.append(self.nms_time)
+        if results:
+            for obj in results:
+                bbox = obj.bbox
+                height = bbox.ymin - bbox.ymax
+                width = bbox.xmin - bbox.xmax
+                logger.debug(
+                    "%s, %.0f%% w=%.0f h=%.0f"
+                    % (labels[obj.id], obj.score * 100, width, height)
+                )
 
-        return res
+                cv2.rectangle(
+                    frame,
+                    (bbox.xmin, bbox.ymin),
+                    (bbox.xmax, bbox.ymax),
+                    (0, 255, 0),
+                    2,
+                )
 
-    def get_scaled_coords(self, xyxy, output_image, pad):
-        """
-        Converts raw prediction bounding box to orginal
-        image coordinates.
+                label = f"{labels[obj.id]} {obj.score:.2f}"
+                print(label)
 
-        Args:
-          xyxy: array of boxes
-          output_image: np array
-          pad: padding due to image resizing (pad_w, pad_h)
-        """
-        pad_w, pad_h = pad
-        in_h, in_w = self.input_size
-        out_h, out_w, _ = output_image.shape
+        else:
+            logging.debug("No objects detected")
 
-        ratio_w = out_w / (in_w - pad_w)
-        ratio_h = out_h / (in_h - pad_h)
+        return results, frame
 
-        out = []
-        for coord in xyxy:
-            x1, y1, x2, y2 = coord
+    def is_close_by(self, obj, frame_height, min_height_pct=0.05):
+        # default: if a sign is 10% of the height of frame
+        bbox = obj.bbox
+        obj_height = bbox.ymin - bbox.ymax
+        return obj_height / frame_height > min_height_pct
 
-            x1 *= in_w * ratio_w
-            x2 *= in_w * ratio_w
-            y1 *= in_h * ratio_h
-            y2 *= in_h * ratio_h
+    def control_car(self, objects):
+        logger.debug("Controlling car")
+        if len(objects) == 0:
+            logger.debug("No objects detected, continue driving")
+            for obj in objects:
+                label = self.labels[obj.id]
+                if label == "stop sign":
+                    logger.info("Detected Stop Sign")
+                    if self.is_close_by(obj, self.height):
+                        self.car.back_wheels.speed = 0
+                        time.sleep(3)
+                        self.car.back_wheels.speed = 35
 
-            x1 = max(0, x1)
-            x2 = min(out_w, x2)
+    def process_objects_on_road(self, frame):
+        # Main entry point of the Road Object Handler
+        logging.debug("Processing objects.................................")
+        objects, final_frame = self.detect_objects(frame)
+        self.control_car(objects)
+        logging.debug("Processing objects END..............................")
 
-            y1 = max(0, y1)
-            y2 = min(out_h, y2)
-
-            out.append((x1, y1, x2, y2))
-
-        return np.array(out).astype(int)
-
-    def process_predictions(
-        self,
-        det,
-        output_image,
-        pad,
-        output_path="detection.jpg",
-        save_img=True,
-        save_txt=True,
-        hide_labels=False,
-        hide_conf=False,
-    ):
-        """
-        Process predictions and optionally output an image with annotations
-        """
-        if len(det):
-            # Rescale boxes from img_size to im0 size
-            # x1, y1, x2, y2=
-            det[:, :4] = self.get_scaled_coords(det[:, :4], output_image, pad)
-            output = {}
-            base, ext = os.path.splitext(output_path)
-
-            s = ""
-
-            # Print results
-            for c in np.unique(det[:, -1]):
-                n = (det[:, -1] == c).sum()  # detections per class
-                s += f"{n} {self.names[int(c)]}{'s' * (n > 1)}, "  # add to string
-
-            if s != "":
-                s = s.strip()
-                s = s[:-1]
-
-            logger.info("Detected: {}".format(s))
-
-            # Write results
-            for *xyxy, conf, cls in reversed(det):
-                if save_img:  # Add bbox to image
-                    c = int(cls)  # integer class
-                    label = (
-                        None
-                        if hide_labels
-                        else (
-                            self.names[c]
-                            if hide_conf
-                            else f"{self.names[c]} {conf:.2f}"
-                        )
-                    )
-                    output_image = plot_one_box(
-                        xyxy, output_image, label=label, color=self.colors(c, True)
-                    )
-                if save_txt:
-                    output[base] = {}
-                    output[base]["box"] = xyxy
-                    output[base]["conf"] = conf
-                    output[base]["cls"] = cls
-                    output[base]["cls_name"] = self.names[c]
-
-            if save_txt:
-                output_txt = base + "txt"
-                with open(output_txt, "w") as f:
-                    json.dump(output, f, indent=1)
-            if save_img:
-                cv2.imwrite(output_path, output_image)
-
-        return det
+        return final_frame
