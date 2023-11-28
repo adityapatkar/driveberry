@@ -92,6 +92,17 @@ class DriveBerry(object):
         self.video_objs.release()
         cv2.destroyAllWindows()
 
+    def follow_lane(self, image):
+        """
+        Main entry point of the lane follower
+        """
+        image = self.lane_follower.follow_lane(image)
+        return image
+
+    def process_objects_on_road(self, image):
+        image = self.object_detector.process_objects_on_road(image)
+        return image
+
     def drive(self, speed=35):
         """
         Drive the car at a given speed
@@ -110,25 +121,14 @@ class DriveBerry(object):
 
                 # show_image("Detected Objects", object_frame)
 
-                # object_frame = self.process_objects_on_road(object_frame)
-                # self.video_objs.write(object_frame)
+                object_frame = self.process_objects_on_road(object_frame)
+                self.video_objs.write(object_frame)
 
                 lane_frame = self.lane_follower.follow_lane(lane_frame)
                 self.video_lane.write(lane_frame)
 
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
-
-    def follow_lane(self, image):
-        """
-        Main entry point of the lane follower
-        """
-        image = self.lane_follower.follow_lane(image)
-        return image
-
-    def process_objects_on_road(self, image):
-        image = self.object_detector.process_objects_on_road(image)
-        return image
 
 
 if __name__ == "__main__":
