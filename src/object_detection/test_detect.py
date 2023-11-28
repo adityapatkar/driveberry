@@ -1,8 +1,10 @@
-import cv2
-import numpy as np
+import os
+
 from pycoral.adapters import common
 from pycoral.adapters import detect
 from pycoral.utils.edgetpu import make_interpreter
+
+import cv2
 
 
 def load_labels(path):
@@ -20,6 +22,7 @@ def draw_objects(image, results, labels):
 
         # Draw label and score
         label = f"{labels[obj.id]} {obj.score:.2f}"
+        print(label)
         cv2.putText(
             image,
             label,
@@ -31,9 +34,9 @@ def draw_objects(image, results, labels):
         )
 
     # Display the image
-    cv2.imshow("Detected Objects", image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow("Detected Objects", image)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
 
 def detect_objects(image_path, model_path, label_path):
@@ -64,7 +67,17 @@ def detect_objects(image_path, model_path, label_path):
 model_path = (
     "src/object_detection/artifacts/model.tflite"  # Path to the TFLite model file
 )
-label_path = "src/object_detection/artifacts/labels.txt"  # Path to the labels file
-image_path = "src/object_detection/artifacts/image.png"  # Path to the image file
+# convert path to absolute path
+model_path = os.path.abspath(model_path)
 
+label_path = "src/object_detection/artifacts/labels.txt"  # Path to the labels file
+# convert path to absolute path
+label_path = os.path.abspath(label_path)
+image_path = "src/object_detection/artifacts/stop.jpeg"  # Path to the image file
+# convert path to absolute path
+image_path = os.path.abspath(image_path)
+
+detect_objects(image_path, model_path, label_path)
+image_path = "src/object_detection/artifacts/image.png"
+image_path = os.path.abspath(image_path)
 detect_objects(image_path, model_path, label_path)
