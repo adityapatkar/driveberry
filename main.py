@@ -110,12 +110,11 @@ class DriveBerry(object):
 
                 # show_image("Detected Objects", object_frame)
 
+                # object_frame = self.process_objects_on_road(object_frame)
+                # self.video_objs.write(object_frame)
+
                 lane_frame = self.lane_follower.follow_lane(lane_frame)
                 self.video_lane.write(lane_frame)
-                # cv2.imshow("Lane Lines", lane_frame)
-
-                object_frame = self.process_objects_on_road(object_frame)
-                self.video_objs.write(object_frame)
 
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
@@ -136,4 +135,4 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     logging.info("Starting car")
     with DriveBerry() as car:
-        car.drive(30)
+        car.drive(35)

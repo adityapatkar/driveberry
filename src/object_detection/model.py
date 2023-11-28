@@ -15,7 +15,7 @@ class DetectionModel(object):
         self,
         car=None,
         speed_limit=35,
-        model_path="src/object_detection/artifacts/model_edgetpu.tflite",
+        model_path="src/object_detection/artifacts/road_signs_quantized_edgetpu.tflite",
         label_path="src/object_detection/artifacts/labels.txt",
     ):
         logger.info("Initializing DetectionModel")
@@ -26,6 +26,8 @@ class DetectionModel(object):
         self.width = 640
         self.height = 480
         self.labels = self.load_labels(self.label_path)
+        self.interpreter = make_interpreter(self.model_path)
+        self.interpreter.allocate_tensors()
 
     def load_labels(self, path):
         with open(path, "r") as file:
@@ -33,24 +35,22 @@ class DetectionModel(object):
 
     def detect_objects(self, frame):
         # Load the TFLite model and allocate tensors.
-        interpreter = make_interpreter(self.model_path)
-        interpreter.allocate_tensors()
 
         # Load labels
         labels = self.labels
 
         # Read and preprocess an image.
         _, scale = common.set_resized_input(
-            interpreter, frame.shape[:2], lambda size: cv2.resize(frame, size)
+            self.interpreter, frame.shape[:2], lambda size: cv2.resize(frame, size)
         )
 
         start = time.perf_counter()
         # Run inference
-        interpreter.invoke()
+        self.interpreter.invoke()
         inference_time = time.perf_counter() - start
         # Get detection results
         results = detect.get_objects(
-            interpreter, score_threshold=0.65, image_scale=scale
+            self.interpreter, score_threshold=0.65, image_scale=scale
         )
         logger.debug("%.2f ms" % (inference_time * 1000))
 

@@ -118,9 +118,9 @@ def average_slope_intercept(frame, line_segments):
     for line_segment in line_segments:
         for x1, y1, x2, y2 in line_segment:
             if x1 == x2:
-                logging.info(
-                    f"skipping vertical line segment (slope=inf): {line_segment}"
-                )
+                # logging.info(
+                #     f"skipping vertical line segment (slope=inf): {line_segment}"
+                # )
                 continue
             fit = np.polyfit((x1, x2), (y1, y2), 1)
             slope = fit[0]

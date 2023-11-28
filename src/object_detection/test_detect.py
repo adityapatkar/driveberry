@@ -1,4 +1,5 @@
 import os
+import time
 
 from pycoral.adapters import common
 from pycoral.adapters import detect
@@ -22,6 +23,7 @@ def draw_objects(image, results, labels):
 
         # Draw label and score
         label = f"{labels[obj.id]} {obj.score:.2f}"
+        print(f"Detected object: {label}")
         print(label)
         cv2.putText(
             image,
@@ -39,45 +41,53 @@ def draw_objects(image, results, labels):
     # cv2.destroyAllWindows()
 
 
-def detect_objects(image_path, model_path, label_path):
+def detect_objects(frame, interpreter, label_path):
+    start = time.time()
     # Load the TFLite model and allocate tensors.
-    interpreter = make_interpreter(model_path)
-    interpreter.allocate_tensors()
 
     # Load labels
     labels = load_labels(label_path)
 
     # Read and preprocess an image.
-    image = cv2.imread(image_path)
+    # image = cv2.imread(image_path)
     _, scale = common.set_resized_input(
-        interpreter, image.shape[:2], lambda size: cv2.resize(image, size)
+        interpreter, frame.shape[:2], lambda size: cv2.resize(frame, size)
     )
 
     # Run inference
     interpreter.invoke()
 
     # Get detection results
-    results = detect.get_objects(interpreter, score_threshold=0.4, image_scale=scale)
+    results = detect.get_objects(interpreter, score_threshold=0.2, image_scale=scale)
+
+    end = time.time()
+    print(f"Time elapsed: {end-start}")
+    print(f"FPS: {1/(end-start)}")
+    print(f"Number of objects detected: {len(results)}")
 
     # Draw the results on the image
-    draw_objects(image, results, labels)
+    draw_objects(frame, results, labels)
 
 
 # Example usage
-model_path = (
-    "src/object_detection/artifacts/model.tflite"  # Path to the TFLite model file
-)
+model_path = "src/object_detection/artifacts/road_signs_quantized_edgetpu.tflite"  # Path to the TFLite model file
 # convert path to absolute path
-model_path = os.path.abspath(model_path)
+# model_path = os.path.abspath(model_path)
+interpreter = make_interpreter(model_path)
+interpreter.allocate_tensors()
 
 label_path = "src/object_detection/artifacts/labels.txt"  # Path to the labels file
 # convert path to absolute path
-label_path = os.path.abspath(label_path)
-image_path = "src/object_detection/artifacts/stop.jpeg"  # Path to the image file
-# convert path to absolute path
-image_path = os.path.abspath(image_path)
+# label_path = os.path.abspath(label_path)
 
-detect_objects(image_path, model_path, label_path)
-image_path = "src/object_detection/artifacts/image.png"
-image_path = os.path.abspath(image_path)
-detect_objects(image_path, model_path, label_path)
+
+# capture video
+cap = cv2.VideoCapture(0)
+while True:
+    ret, frame = cap.read()
+    # resize to 320*240
+    frame = cv2.resize(frame, (320, 240))
+    if ret:
+        detect_objects(frame, interpreter, label_path)
+    else:
+        break
