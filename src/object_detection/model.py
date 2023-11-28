@@ -28,6 +28,7 @@ class DetectionModel(object):
         self.labels = self.load_labels(self.label_path)
         self.interpreter = make_interpreter(self.model_path)
         self.interpreter.allocate_tensors()
+        self.stopped = False
 
     def load_labels(self, path):
         with open(path, "r") as file:
@@ -79,10 +80,12 @@ class DetectionModel(object):
                 label = self.labels[obj.id]
                 if label == "stop sign":
                     logger.info("Detected Stop Sign")
-                    if self.is_close_by(obj, self.height):
+                    if self.is_close_by(obj, self.height) and self.stopped == False:
+                        logger.info("Stopping car for 3 seconds")
                         self.car.back_wheels.speed = 0
                         time.sleep(3)
                         self.car.back_wheels.speed = 30
+                        self.stopped = True
 
     def process_objects_on_road(self, frame):
         # Main entry point of the Road Object Handler
