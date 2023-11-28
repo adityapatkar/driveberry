@@ -83,7 +83,7 @@ class DetectionModel(object):
                 if label == "stop sign":
                     self.stop_sign_count += 1
                     logger.info("Detected Stop Sign")
-                    if self.stop_sign_count == 1 and self.stopped == False:
+                    if self.stop_sign_count == 2 and self.stopped == False:
                         logger.info("Stopping car for 3 seconds")
                         self.car.back_wheels.speed = 0
                         time.sleep(3)
