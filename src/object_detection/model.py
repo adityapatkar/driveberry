@@ -50,27 +50,11 @@ class DetectionModel(object):
 
         # Get detection results
         results = detect.get_objects(
-            interpreter, score_threshold=0.4, image_scale=scale
+            interpreter, score_threshold=0.65, image_scale=scale
         )
 
         if results:
             for obj in results:
-                bbox = obj.bbox
-                height = bbox.ymin - bbox.ymax
-                width = bbox.xmin - bbox.xmax
-                logger.debug(
-                    "%s, %.0f%% w=%.0f h=%.0f"
-                    % (labels[obj.id], obj.score * 100, width, height)
-                )
-
-                cv2.rectangle(
-                    frame,
-                    (bbox.xmin, bbox.ymin),
-                    (bbox.xmax, bbox.ymax),
-                    (0, 255, 0),
-                    2,
-                )
-
                 label = f"{labels[obj.id]} {obj.score:.2f}"
                 print(label)
 
@@ -89,6 +73,7 @@ class DetectionModel(object):
         logger.debug("Controlling car")
         if len(objects) == 0:
             logger.debug("No objects detected, continue driving")
+        else:
             for obj in objects:
                 label = self.labels[obj.id]
                 if label == "stop sign":
