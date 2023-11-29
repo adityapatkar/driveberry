@@ -13,8 +13,8 @@ Driveberry utilizes a Raspberry Pi to control and automate a vehicle. It uses Op
 - Utilizes the Raspberry Pi and an Edge TPU to build a basic autonomous vehicle that can follow lanes and detect stop signs
 - Fully coded in Python.
 - Uses OpenCV to build a lane following teacher network.
-- Uses a CNN to build a student network that can drive the vehicle autonomously.
-- Object detection network is a tflite model that can detect stop signs. Runs on the Edge TPU with 30-40FPS as opposed to 1-2FPS on the CPU.
+- A CNN is trained using the videos captured from the camera while using the teacher network to control the vehicle.
+- Object detection network is a quantized tflite model pretrained and taken from the DeepPiCar repo that can detect stop signs. Runs on the Edge TPU with 30-40FPS as opposed to 1-2FPS on the CPU.
 
 ## Requirements
 
