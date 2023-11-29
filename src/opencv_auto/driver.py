@@ -40,9 +40,9 @@ class AutoDrive(object):
         """
         Steer the car based on lane line coordinate
         """
-        logging.debug("steering...")
+        logger.debug("steering...")
         if len(lane_lines) == 0:
-            logging.error("No lane lines detected, nothing to do.")
+            logger.error("No lane lines detected, nothing to do.")
             return frame
 
         new_steering_angle = compute_steering_angle(frame, lane_lines)
