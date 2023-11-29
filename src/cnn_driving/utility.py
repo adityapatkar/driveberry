@@ -1,9 +1,16 @@
+""" 
+Utility functions for CNN driving model
+"""
+
 import math
 import cv2
 import numpy as np
 
 
 def img_preprocess(image):
+    """
+    Preprocess image for CNN driving model
+    """
     height, _, _ = image.shape
     image = image[int(height / 2) :, :, :]
     image = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
@@ -19,17 +26,11 @@ def display_heading_line(
     line_color=(0, 0, 255),
     line_width=5,
 ):
+    """
+    Find the heading line from steering angle
+    """
     heading_image = np.zeros_like(frame)
     height, width, _ = frame.shape
-
-    # figure out the heading line from steering angle
-    # heading line (x1,y1) is always center bottom of the screen
-    # (x2, y2) requires a bit of trigonometry
-
-    # Note: the steering angle of:
-    # 0-89 degree: turn left
-    # 90 degree: going straight
-    # 91-180 degree: turn right
     steering_angle_radian = steering_angle / 180.0 * math.pi
     x1 = int(width / 2)
     y1 = height

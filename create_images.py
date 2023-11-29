@@ -1,3 +1,6 @@
+""" 
+This script is used to create images and steering angle from a video file.
+"""
 import os
 import sys
 import cv2

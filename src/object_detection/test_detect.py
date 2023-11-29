@@ -1,4 +1,7 @@
-import os
+""" 
+    File to test the object detection performance on Edge TPU
+"""
+
 import time
 
 from pycoral.adapters import common
@@ -9,11 +12,17 @@ import cv2
 
 
 def load_labels(path):
+    """
+    Load labels from text file.
+    """
     with open(path, "r") as file:
         return {i: line.strip() for i, line in enumerate(file.readlines())}
 
 
 def draw_objects(image, results, labels):
+    """
+    Draw bounding boxes and labels for each detection in image.
+    """
     for obj in results:
         # Draw the bounding box
         bbox = obj.bbox
@@ -36,12 +45,15 @@ def draw_objects(image, results, labels):
         )
 
     # Display the image
-    # cv2.imshow("Detected Objects", image)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+    cv2.imshow("Detected Objects", image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 
 def detect_objects(frame, interpreter, label_path):
+    """
+    Detect objects on the road
+    """
     start = time.time()
     # Load the TFLite model and allocate tensors.
 
@@ -71,22 +83,18 @@ def detect_objects(frame, interpreter, label_path):
 
 # Example usage
 model_path = "src/object_detection/artifacts/road_signs_quantized_edgetpu.tflite"  # Path to the TFLite model file
-# convert path to absolute path
-# model_path = os.path.abspath(model_path)
+
+# create model interpreter
 interpreter = make_interpreter(model_path)
 interpreter.allocate_tensors()
 
 label_path = "src/object_detection/artifacts/labels.txt"  # Path to the labels file
-# convert path to absolute path
-# label_path = os.path.abspath(label_path)
 
 
 # capture video
 cap = cv2.VideoCapture(0)
 while True:
     ret, frame = cap.read()
-    # resize to 320*240
-    frame = cv2.resize(frame, (320, 240))
     if ret:
         detect_objects(frame, interpreter, label_path)
     else:

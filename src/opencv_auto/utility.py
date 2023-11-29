@@ -1,3 +1,6 @@
+""" 
+    Utility functions for this module
+"""
 import math
 import cv2
 import numpy as np
@@ -7,7 +10,7 @@ def show_image(title, frame):
     """
     Show image in a window
     """
-    # cv2.imshow(title, frame)
+    cv2.imshow(title, frame)
 
 
 def length_of_line_segment(line):
@@ -25,9 +28,8 @@ def make_points(frame, line):
     height, width, _ = frame.shape
     slope, intercept = line
     y1 = height  # bottom of the frame
-    y2 = int(y1 * 1 / 2)  # make points from middle of the frame down
+    y2 = int(y1 * 1 / 2)
 
-    # bound the coordinates within the frame
     x1 = max(-width, min(2 * width, int((y1 - intercept) / slope)))
     x2 = max(-width, min(2 * width, int((y2 - intercept) / slope)))
     return [[x1, y1, x2, y2]]

@@ -1,3 +1,7 @@
+""" 
+This file contains the driver for the lane detection using opencv.
+"""
+
 import logging
 
 from .frame_processing import detect_lane
@@ -16,7 +20,7 @@ class AutoDrive(object):
         """
         car: the car that should be controlled by this object
         """
-        logging.info("Creating an instance of AutoDrive")
+        logger.info("Creating an instance of AutoDrive")
         self.car = car
         self.curr_steering_angle = 90
 
@@ -24,7 +28,7 @@ class AutoDrive(object):
         """
         Main entry point of the lane follower
         """
-        # Main entry point of the lane follower
+
         show_image("orig", frame)
 
         lane_lines, frame = detect_lane(frame, show_image_windows=False)

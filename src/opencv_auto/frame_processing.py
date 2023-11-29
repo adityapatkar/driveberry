@@ -1,9 +1,10 @@
+""" 
+This module contains functions for processing a frame
+"""
+
 import logging
 import cv2
 import numpy as np
-import math
-import datetime
-import sys
 
 from src.opencv_auto.utility import (
     show_image,
@@ -70,9 +71,8 @@ def detect_line_segments(masked_image):
     """
     Detect line segments using Probabilistic Hough Transform
     """
-    # tuning min_threshold, minLineLength, maxLineGap is a trial and error process by hand
-    precision = 1  # precision in pixel, i.e. 1 pixel
-    angle = np.pi / 180  # degree in radian, i.e. 1 degree
+    precision = 1  # precision in pixel
+    angle = np.pi / 180  # degree in radian
     min_threshold = 20  # minimal of votes #was 10
 
     # detect line segments
@@ -88,8 +88,8 @@ def detect_line_segments(masked_image):
 
     if line_segments is not None:
         for line_segment in line_segments:
-            logging.debug("detected line_segment:")
-            logging.debug(
+            logger.debug("detected line_segment:")
+            logger.debug(
                 f"{line_segment} of length {length_of_line_segment(line_segment[0])}"
             )
 
@@ -104,7 +104,7 @@ def average_slope_intercept(frame, line_segments):
     """
     lane_lines = []
     if line_segments is None:
-        logging.info("No line_segment segments detected")
+        logger.info("No line_segment segments detected")
         return lane_lines
 
     _, width, _ = frame.shape
@@ -118,7 +118,7 @@ def average_slope_intercept(frame, line_segments):
     for line_segment in line_segments:
         for x1, y1, x2, y2 in line_segment:
             if x1 == x2:
-                # logging.info(
+                # logger.info(
                 #     f"skipping vertical line segment (slope=inf): {line_segment}"
                 # )
                 continue
@@ -140,7 +140,7 @@ def average_slope_intercept(frame, line_segments):
     if len(right_fit) > 0:
         lane_lines.append(make_points(frame, right_fit_average))
 
-    logging.debug(f"lane lines: {lane_lines}")
+    logger.debug(f"lane lines: {lane_lines}")
 
     return lane_lines
 
@@ -149,7 +149,7 @@ def detect_lane(frame, show_image_windows=False):
     """
     Detect lane lines in a frame
     """
-    logging.debug("detecting lane lines...")
+    logger.debug("detecting lane lines...")
 
     edges = detect_edges(frame)
     if show_image_windows:
