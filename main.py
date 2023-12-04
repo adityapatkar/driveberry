@@ -9,9 +9,9 @@ import cv2
 
 from src.opencv_auto.driver import AutoDrive
 
-#from src.cnn_driving.driver import (
-    CNNDrive,
-)  # Uncomment this line to use the CNN driving model
+# from src.cnn_driving.driver import (
+#    CNNDrive,
+# )  # Uncomment this line to use the CNN driving model
 
 from src.object_detection.model import DetectionModel
 from src.opencv_auto.utility import show_image
@@ -49,7 +49,7 @@ class DriveBerry(object):
         self.back_wheels.speed = 0
 
         self.lane_follower = AutoDrive(self)
-        #self.lane_follower = CNNDrive(self)
+        # self.lane_follower = CNNDrive(self)
 
         self.object_detector = DetectionModel(self)
 
