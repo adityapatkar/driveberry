@@ -23,7 +23,7 @@ class DetectionModel(object):
     def __init__(
         self,
         car=None,
-        speed_limit=35,
+        speed_limit=40,
         model_path="src/object_detection/artifacts/road_signs_quantized_edgetpu.tflite",
         label_path="src/object_detection/artifacts/labels.txt",
     ):
