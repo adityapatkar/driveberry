@@ -136,7 +136,7 @@ class DriveBerry(object):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logger.DEBUG)
+    logging.basicConfig(level=logging.DEBUG)
     logging.info("Starting car")
     with DriveBerry() as car:
         car.drive(35)
