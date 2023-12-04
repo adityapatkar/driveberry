@@ -51,7 +51,7 @@ class DriveBerry(object):
         # self.lane_follower = AutoDrive(self)
         self.lane_follower = CNNDrive(self)
 
-        self.object_detector = DetectionModel(self)
+        # self.object_detector = DetectionModel(self)
 
         logger.debug("Setting up video capture")
 
