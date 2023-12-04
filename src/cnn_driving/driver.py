@@ -7,7 +7,7 @@ import math
 
 import cv2
 import numpy as np
-from tensorflow.keras.models import load_model
+from keras.models import load_model
 
 from src.cnn_driving.utility import img_preprocess, display_heading_line, show_image
 
