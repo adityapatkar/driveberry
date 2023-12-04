@@ -7,13 +7,13 @@ import datetime
 import picar
 import cv2
 
-# from src.opencv_auto.driver import AutoDrive
+from src.opencv_auto.driver import AutoDrive
 
-from src.cnn_driving.driver import (
+#from src.cnn_driving.driver import (
     CNNDrive,
 )  # Uncomment this line to use the CNN driving model
 
-# from src.object_detection.model import DetectionModel
+from src.object_detection.model import DetectionModel
 from src.opencv_auto.utility import show_image
 
 logger = logging.getLogger(__name__)
@@ -48,10 +48,10 @@ class DriveBerry(object):
         self.back_wheels.forward()
         self.back_wheels.speed = 0
 
-        # self.lane_follower = AutoDrive(self)
-        self.lane_follower = CNNDrive(self)
+        self.lane_follower = AutoDrive(self)
+        #self.lane_follower = CNNDrive(self)
 
-        # self.object_detector = DetectionModel(self)
+        self.object_detector = DetectionModel(self)
 
         logger.debug("Setting up video capture")
 
@@ -128,8 +128,8 @@ class DriveBerry(object):
 
                 show_image("Detected Objects", object_frame)
 
-                # object_frame = self.process_objects_on_road(object_frame)
-                # self.video_objs.write(object_frame)
+                object_frame = self.process_objects_on_road(object_frame)
+                self.video_objs.write(object_frame)
 
                 lane_frame = self.lane_follower.follow_lane(lane_frame)
                 self.video_lane.write(lane_frame)
