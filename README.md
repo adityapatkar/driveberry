@@ -55,7 +55,7 @@ This project is released under the MIT License. See the LICENSE file for more de
 
 ## Acknowledgements
 
-A special thanks to professor Jerry Wu at University of Maryland for his guidance and support throughout the project.
+A special thanks to professor Jerry Wu and the TA Aman Sharma at `University of Maryland` for their guidance and support throughout the project.
 
 Code is inspired by the following projects:
 
