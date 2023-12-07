@@ -47,4 +47,4 @@ def show_image(title, frame):
     """
     Show image in a window
     """
-    cv2.imshow(title, frame)
+    # cv2.imshow(title, frame)
