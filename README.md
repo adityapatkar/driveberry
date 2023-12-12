@@ -57,11 +57,6 @@ This project is released under the MIT License. See the LICENSE file for more de
 
 A special thanks to professor Jerry Wu at University of Maryland for his guidance and support throughout the project.
 
-Code is inspired by the following projects:
-
-- DeepPiCar: TODO add link
-- Yolo5 for EdgeTPU: TODO Add link
-
 ## Contact Information
 
 For further inquiries or to report issues, please contact Aditya at apatkar@umd.edu.
